@@ -61,6 +61,82 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-什么是-HTTPS" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/12/14/什么是-HTTPS/" class="article-date">
+  <time datetime="2015-12-14T08:47:27.000Z" itemprop="datePublished">2015-12-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/12/14/什么是-HTTPS/">什么是 HTTPS</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们先来看一下百度百科的解释：<br>HTTPS（全称：Hyper Text Transfer Protocol over Secure Socket Layer），是以安全为目标的HTTP通道，简单讲是HTTP的安全版。即HTTP下加入SSL层，HTTPS的安全基础是SSL，因此加密的详细内容就需要SSL。 它是一个URI scheme（抽象标识符体系），句法类同http:体系。用于安全的HTTP数据传输。https:URL表明它使用了HTTP，但HTTPS存在不同于HTTP的默认端口及一个加密/身份验证层（在HTTP与TCP之间）。这个系统的最初研发由网景公司(Netscape)进行，并内置于其浏览器Netscape Navigator中，提供了身份验证与加密通讯方法</p>
+<p>简单来讲就是一句话： HTTP + SSL = HTTPS</p>
+<p>那 HTTP 和 HTTPS 二者之间到底有什么区别呢 ？<br>HTTP(超文本传输协议)协议被用于在Web浏览器和网站服务器之间传递信息。HTTP协议以明文方式发送内容，不提供任何方式的数据加密，如果攻击者截取了Web浏览器和网站服务器之间的传输报文，就可以直接读懂其中的信息，因此HTTP协议不适合传输一些敏感信息，比如信用卡号、密码等。<br>为了解决HTTP协议的这一缺陷，需要使用另一种协议：安全套接字层超文本传输协议HTTPS。为了数据传输的安全，HTTPS在HTTP的基础上加入了SSL协议，SSL依靠证书来验证服务器的身份，并为浏览器和服务器之间的通信加密。</p>
+<p>HTTPS和HTTP的区别主要为以下四点：<br>一、https协议需要到ca申请证书，一般免费证书很少，需要交费。<br>二、http是超文本传输协议，信息是明文传输，https 则是具有安全性的ssl加密传输协议。<br>三、http和https使用的是完全不同的连接方式，用的端口也不一样，前者是80，后者是443。<br>四、http的连接很简单，是无状态的；HTTPS协议是由SSL+HTTP协议构建的可进行加密传输、身份认证的网络协议，比http协议安全。</p>
+<p>那现在肯定有些人对SSL好奇咯，我们现在看看 SSL能提供一些什么服务呢 ？</p>
+<p>SSL协议提供的服务主要有哪些<br>1）认证用户和服务器，确保数据发送到正确的客户机和服务器<br>2）加密数据以防止数据中途被窃取<br>3）维护数据的完整性，确保数据在传输过程中不被改变。<br>SSL协议的工作流程<br>服务器认证阶段：<br>1）客户端向服务器发送一个开始信息“Hello”以便开始一个新的会话连接；<br>2）服务器根据客户的信息确定是否需要生成新的主密钥，如需要则服务器在响应客户的“Hello”信息时将包含生成主密钥所需的信息；<br>3）客户根据收到的服务器响应信息，产生一个主密钥，并用服务器的公开密钥加密后传给服务器；<br>4）服务器恢复该主密钥，并返回给客户一个用主密钥认证的信息，以此让客户认证服务器。</p>
+<p>那 现在我们来看一下 HTTPS 在使用时  我们在iOS这一块需要做一些什么事情呢 ？</p>
+<p>实现支持HTTPS<br>首先，需要明确你使用HTTP/HTTPS的用途，因为OSX和iOS平台提供了多种API，来支持不同的用途，官方文档《Making HTTP and HTTPS Requests》有详细的说明，而文档《HTTPS Server Trust Evaluation》则详细讲解了HTTPS验证相关知识，这里就不多说了。本文主要讲解我们最常用的NSURLConnection支持HTTPS的实现（NSURLSession的实现方法类似，只是要求授权证明的回调不一样而已），以及怎么样使用AFNetworking这个非常流行的第三方库来支持HTTPS。本文假设你对HTTP以及NSURLConnection的接口有了足够的了解。<br>验证证书的API<br>相关的Api在Security Framework中，验证流程如下：<br>1). 第一步，先获取需要验证的信任对象(Trust Object)。这个Trust Object在不同的应用场景下获取的方式都不一样，对于NSURLConnection来说，是从delegate方法-connection:willSendRequestForAuthenticationChallenge:回调回来的参数challenge中获取([challenge.protectionSpace serverTrust])。<br>2). 使用系统默认验证方式验证Trust Object。SecTrustEvaluate会根据Trust Object的验证策略，一级一级往上，验证证书链上每一级数字签名的有效性（上一部分有讲解），从而评估证书的有效性。<br>3). 如第二步验证通过了，一般的安全要求下，就可以直接验证通过，进入到下一步：使用Trust Object生成一份凭证([NSURLCredential credentialForTrust:serverTrust])，传入challenge的sender中([challenge.sender useCredential:cred forAuthenticationChallenge:challenge])处理，建立连接。<br>4). 假如有更强的安全要求，可以继续对Trust Object进行更严格的验证。常用的方式是在本地导入证书，验证Trust Object与导入的证书是否匹配。更多的方法可以查看Enforcing Stricter Server Trust Evaluation，这一部分在讲解AFNetworking源码中会讲解到。<br>5). 假如验证失败，取消此次Challenge-Response Authentication验证流程，拒绝连接请求。<br>ps: 假如是自建证书的，则会跳过第二步，使用第三部进行验证，因为自建证书的根CA的数字签名未在操作系统的信任列表中。<br>iOS授权验证的API和流程大概了解了，下面，我们看看在NSURLConnection中的代码实现：<br>使用NSURLConnection支持HTTPS的实现<br>// Now start the connection<br>NSURL * httpsURL = [NSURL URLWithString:@”<a href="https://www.google.com" target="_blank" rel="external">https://www.google.com</a>“];<br>self.connection = [NSURLConnection connectionWithRequest:[NSURLRequest requestWithURL:httpsURL] delegate:self];</p>
+<p>//回调</p>
+<ul>
+<li><p>(void)connection:(NSURLConnection <em>)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge </em>)challenge {<br>  //1)获取trust object<br>  SecTrustRef trust = challenge.protectionSpace.serverTrust;<br>  SecTrustResultType result;</p>
+<p>  //2)SecTrustEvaluate对trust进行验证<br>  OSStatus status = SecTrustEvaluate(trust, &amp;result);<br>  if (status == errSecSuccess &amp;&amp;</p>
+<pre><code>(result == kSecTrustResultProceed ||
+result == kSecTrustResultUnspecified)) {
+
+//3)验证成功，生成NSURLCredential凭证cred，告知challenge的sender使用这个凭证来继续连接
+NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
+[challenge.sender useCredential:cred forAuthenticationChallenge:challenge];
+</code></pre><p>  } else {</p>
+<pre><code>//5)验证失败，取消这次验证流程
+[challenge.sender cancelAuthenticationChallenge:challenge];
+</code></pre><p>}<br>}<br>上面是代码是通过系统默认验证流程来验证证书的。假如我们是自建证书的呢？这样Trust Object里面服务器的证书因为不是可信任的CA签发的，所以直接使用SecTrustEvaluate进行验证是不会成功。又或者，即使服务器返回的证书是信任CA签发的，又如何确定这证书就是我们想要的特定证书？这就需要先在本地导入证书，设置成需要验证的Anchor Certificate(就是根证书)，再调用SecTrustEvaluate来验证。代码如下<br>//先导入证书<br>NSString <em> cerPath = …; //证书的路径<br>NSData </em> cerData = [NSData dataWithContentsOfFile:cerPath];<br>SecCertificateRef certificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)(cerData));<br>self.trustedCertificates = @[CFBridgingRelease(certificate)];<br>//回调</p>
+</li>
+<li><p>(void)connection:(NSURLConnection <em>)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge </em>)challenge {<br>  //1)获取trust object<br>  SecTrustRef trust = challenge.protectionSpace.serverTrust;<br>  SecTrustResultType result;<br>  //注意：这里将之前导入的证书设置成下面验证的Trust Object的anchor certificate<br>  SecTrustSetAnchorCertificates(trust, (__bridge CFArrayRef)self.trustedCertificates);<br>  //2)SecTrustEvaluate会查找前面SecTrustSetAnchorCertificates设置的证书或者系统默认提供的证书，对trust进行验证<br>  OSStatus status = SecTrustEvaluate(trust, &amp;result);<br>  if (status == errSecSuccess &amp;&amp;</p>
+<pre><code>(result == kSecTrustResultProceed ||
+result == kSecTrustResultUnspecified)) {
+
+//3)验证成功，生成NSURLCredential凭证cred，告知challenge的sender使用这个凭证来继续连接
+NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
+[challenge.sender useCredential:cred forAuthenticationChallenge:challenge];
+</code></pre><p>  } else {</p>
+<pre><code>//5)验证失败，取消这次验证流程
+[challenge.sender cancelAuthenticationChallenge:challenge];
+</code></pre><p>}<br>}<br>建议采用本地导入证书的方式验证证书，来保证足够的安全性。更多的验证方法，请查看官方文档《HTTPS Server Trust Evaluation》</p>
+</li>
+</ul>
+<p>那 对于熟悉网络请求的同学 对于AFNetworking肯定不会陌生了，它是使用的时候是怎么配置HTTPS的呢？</p>
+<p>AFNetworking上配置对HTTPS的支持非常简单：</p>
+<p>NSURL <em> url = [NSURL URLWithString:@”<a href="https://www.google.com" target="_blank" rel="external">https://www.google.com</a>“];<br>AFHTTPRequestOperationManager </em> requestOperationManager = [[AFHTTPRequestOperationManager alloc] initWithBaseURL:url];<br>dispatch_queue_t requestQueue = dispatch_create_serial_queue_for_name(“kRequestCompletionQueue”);<br>requestOperationManager.completionQueue = requestQueue;<br>AFSecurityPolicy <em> securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeCertificate];<br>//allowInvalidCertificates 是否允许无效证书（也就是自建的证书），默认为NO<br>//如果是需要验证自建证书，需要设置为YES<br>securityPolicy.allowInvalidCertificates = YES;<br>//validatesDomainName 是否需要验证域名，默认为YES；<br>//假如证书的域名与你请求的域名不一致，需把该项设置为NO<br>//主要用于这种情况：客户端请求的是子域名，而证书上的是另外一个域名。因为SSL证书上的域名是独立的，假如证书上注册的域名是www.google.com，那么mail.google.com是无法验证通过的；当然，有钱可以注册通配符的域名</em>.google.com，但这个还是比较贵的。<br>securityPolicy.validatesDomainName = NO;<br>//validatesCertificateChain 是否验证整个证书链，默认为YES<br>//设置为YES，会将服务器返回的Trust Object上的证书链与本地导入的证书进行对比，这就意味着，假如你的证书链是这样的：<br>//GeoTrust Global CA<br>//    Google Internet Authority G2<br>//        <em>.google.com<br>//那么，除了导入</em>.google.com之外，还需要导入证书链上所有的CA证书（GeoTrust Global CA, Google Internet Authority G2）；<br>//如是自建证书的时候，可以设置为YES，增强安全性；假如是信任的CA所签发的证书，则建议关闭该验证；<br>securityPolicy.validatesCertificateChain = NO;<br>requestOperationManager.securityPolicy = securityPolicy;<br>这就是AFNetworking的支持HTTPS的主要配置说明，AFHTTPSessionManager与之基本一致，就不重复了。</p>
+<p>因为HTTPS相比于HTTP来说，会有一些性能上的劣势，但是相对比安全性，就是小巫见大巫了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/12/14/什么是-HTTPS/" data-id="cii5pyuhy0001z00ew6d7k6d9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-十款经典的markdown编辑器" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/12/14/十款经典的markdown编辑器/" class="article-date">
@@ -110,7 +186,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/十款经典的markdown编辑器/" data-id="cii5pjthe00004b0ecfannxes" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/十款经典的markdown编辑器/" data-id="cii5pyuhf0000z00e6asgmj0x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -154,7 +230,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/iOS9-Bitcode/" data-id="cii5pjthp00014b0edu7vlenw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/iOS9-Bitcode/" data-id="cii5pyui20002z00eg6bkeiuj" class="article-share-link">Share</a>
       
       
     </footer>
@@ -191,7 +267,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="cii5pjthu00034b0eaty5wqft" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="cii5pyui70004z00e1bjb2uoe" class="article-share-link">Share</a>
       
       
     </footer>
@@ -228,7 +304,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="cii5pjthw00044b0eh502k2ta" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="cii5pyuia0005z00enw466pzq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -273,7 +349,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="cii5pjths00024b0evf1f7tie" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="cii5pyui50003z00ey6238gh0" class="article-share-link">Share</a>
       
       
     </footer>
@@ -298,7 +374,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">5</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">6</span></li></ul>
     </div>
   </div>
 
@@ -308,6 +384,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/12/14/什么是-HTTPS/">什么是 HTTPS</a>
+          </li>
         
           <li>
             <a href="/2015/12/14/十款经典的markdown编辑器/">十款经典的markdown编辑器</a>
@@ -323,10 +403,6 @@
         
           <li>
             <a href="/2015/12/11/HTTP中的cookie/">HTTP中的cookie</a>
-          </li>
-        
-          <li>
-            <a href="/2015/12/11/hello-world/">Hello World</a>
           </li>
         
       </ul>
