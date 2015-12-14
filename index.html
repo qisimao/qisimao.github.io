@@ -61,6 +61,50 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-iOS9-Bitcode" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/12/14/iOS9-Bitcode/" class="article-date">
+  <time datetime="2015-12-14T08:16:55.000Z" itemprop="datePublished">2015-12-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/12/14/iOS9-Bitcode/">iOS9 Bitcode</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>###问题一 ：什么是 bit code<br>在App Distribution Guide – App Thinning (iOS, watchOS)一节中，找到了下面这样一个定义：<br>Bitcode is an intermediate representation of a compiled program. Apps you upload to iTunes Connect that contain bitcode will be compiled and linked on the App Store. Including bitcode will allow Apple to re-optimize your app binary in the future without the need to submit a new version of your app to the store.<br>bitcode是被编译程序的一种中间形式的代码。包含bitcode配置的程序将会在App store上被编译和链接。bitcode允许苹果在后期重新优化我们程序的二进制文件，而不需要我们重新提交一个新的版本到App store上。</p>
+<p>在What’s New in Xcode-New Features in Xcode 7中，还有一段如下的描述<br>Bitcode. When you archive for submission to the App Store, Xcode will compile your app into an intermediate representation. The App Store will then compile the bitcode down into the 64 or 32 bit executables as necessary.<br>当我们提交程序到App store上时，Xcode会将程序编译为一个中间表现形式(bitcode)。然后App store会再将这个botcode编译为可执行的64位或32位程序。Xcode7默认会开启Bitcode。</p>
+<p>###问题二 :可能存在的问题<br>用Xcode 7 上运行我们的工程，结果发现工程编译不过。看了下问题，报的是以下错误：<br>ld: ‘/Users/<strong>/Framework/SDKs/PolymerPay/Library/mobStat/lib</strong>SDK.a(**ForSDK.o)’ does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture arm64<br>得到的信息是我们引入的一个第三方库不包含bitcode。</p>
+<p>bit code配置<br>在上面的错误提示中，提到了如何处理我们遇到的问题：<br>You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture arm64<br>对应这个问题我们有两种解决方案，要么让第三方库支持，要么关闭target的bitcode选项。<br>实际上在Xcode 7中，我们新建一个iOS程序时，bitcode选项默认是设置为YES的。我们可以在”Build Settings”-&gt;”Enable Bitcode”选项中看到这个设置。<br>但是还有一点，对应着三个平台 bitcode 是不一样的。对应iOS，bitcode是可选的。对于watchOS，bitcode是必须的。Mac OS不支持bitcode。</p>
+<p>###还有一点需要注意：<br>在做静态库的时候，如果需要支持bitcode，请看下面链接<br><a href="http://stackoverflow.com/questions/31486232/how-do-i-xcodebuild-a-static-library-with-bitcode-enabled" target="_blank" rel="external">http://stackoverflow.com/questions/31486232/how-do-i-xcodebuild-a-static-library-with-bitcode-enabled</a></p>
+<p><a href="http://blog.csdn.net/yjh4866/article/details/49156899" target="_blank" rel="external">http://blog.csdn.net/yjh4866/article/details/49156899</a></p>
+<pre><code>  所以说，如果我们的工程需要支持bitcode，则必须要求所有的引入的第三方库都支持bitcode。否则就只能等着公司那些大哥大姐们啥时候提供一个新包给我们了。
+了解了吧，bitcode就是这样一个东西，重复上面的那句话：bitcode是被编译程序的一种中间形式的代码。包含bitcode配置的程序将会在App store上被编译和链接。
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/12/14/iOS9-Bitcode/" data-id="cii5ozg7600007g0erhep8bjm" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-HTTP服务端状态码" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/12/14/HTTP服务端状态码/" class="article-date">
@@ -88,7 +132,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="cii5omtr90001ix0e9ql03f4y" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="cii5ozg7k00027g0ea6uvprnc" class="article-share-link">Share</a>
       
       
     </footer>
@@ -125,7 +169,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="cii5omtrg0002ix0e16fg3qc9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="cii5ozg7l00037g0efdez329s" class="article-share-link">Share</a>
       
       
     </footer>
@@ -170,7 +214,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="cii5omtqp0000ix0eddtbdnj7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="cii5ozg7h00017g0ek2v0wuw1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -195,7 +239,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">3</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -205,6 +249,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/12/14/iOS9-Bitcode/">iOS9 Bitcode</a>
+          </li>
         
           <li>
             <a href="/2015/12/14/HTTP服务端状态码/">HTTP服务端状态码</a>
