@@ -61,6 +61,99 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-支付宝支付" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/12/21/支付宝支付/" class="article-date">
+  <time datetime="2015-12-21T00:44:23.000Z" itemprop="datePublished">2015-12-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/12/21/支付宝支付/">支付宝支付</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#支付宝支付</p>
+<p>下载：<br><a href="https://b.alipay.com/order/productDetail.htm?productId=2013080604609654&amp;tabId=4#ps-tabinfo-hash" target="_blank" rel="external">https://b.alipay.com/order/productDetail.htm?productId=2013080604609654&amp;tabId=4#ps-tabinfo-hash</a></p>
+<p>文档：<br>压缩包里应该有两个压缩文档<br>&lt;支付宝钱包支付接口开发包2.0标准版&gt;<br>&lt;支付宝钱包支付接口开发包2.0标准版接入与使用规则&gt;<br>iOS 相关内容可以直接看第一个文档，第二个文档名字和里面写的不一样，内容其实是一个附录;<br>文档里面多个平台都涉及到了，内容有些杂乱。</p>
+<p>下面我用几幅图来给大家展示一下客户端调起支付的过程：</p>
+<p>1.买家在手机应用中购买商品或者是服务<br><img src="http://ac-1qdtcf4c.clouddn.com/257d752d2f3fc78f.png" alt=""></p>
+<p>2.买家选择支付方式<br><img src="http://ac-1qdtcf4c.clouddn.com/f76d425211867ed8.png" alt=""></p>
+<p>3.进入支付宝收银台进行付款<br><img src="http://ac-1qdtcf4c.clouddn.com/8b809e52fe258fb9.png" alt=""></p>
+<p>4.支付成功<br><img src="http://ac-1qdtcf4c.clouddn.com/25463dc99a5fa5b8.png" alt=""></p>
+<p>5.交易完成，买家可以查看交易信息<br><img src="http://ac-1qdtcf4c.clouddn.com/7174ef6c1f58a9e9.png" alt=""></p>
+<p>在调用支付之前,将商品数据信息生成待签名的字符串,信息包括:</p>
+<p>{</p>
+<p>}</p>
+<p>如何声明密钥请看文档：</p>
+<p><a href="http://doc.open.alipay.com/doc2/detail?treeId=58&amp;articleId=103242&amp;docType=1" target="_blank" rel="external">http://doc.open.alipay.com/doc2/detail?treeId=58&amp;articleId=103242&amp;docType=1</a></p>
+<p>1.安装OpenSSL工具</p>
+<p>2.RSA私钥及公钥生成</p>
+<p>RSA加密算法除了可以加解密外，还可以用来做签名校验。简单的说，RSA会生成一个私钥和一个公钥，私钥你应该独自保管，公钥你可以分发出去。做签名验证时，你可以用私钥对需要传输的数据做签名加密，生成一个签名值，之后分发数据，接收方通过公钥对签名值做校验，如果一致则认为数据无篡改.</p>
+<p>具体到支付宝使用RSA做签名验证，就是在生产订单的时候，需要使用私钥生成签名值；在处理返回的支付结果时，需要使用公钥验证返回结果是否被篡改了。具体需要对哪些值，怎么样生成签名，对哪些值做签名验证，可以在第一个文档中找找，后面我会简单提一下，但还是以文档或实践为准吧。</p>
+<p><strong>订单签名：</strong></p>
+<p>上面说了，订单签名应该使用私钥，但是把私钥放在app里其实是不安全的，因为你的app是分发到用户手里的，私钥应该放在你的手里，分发出去的应该是公钥。所以私钥最好是放在自己的服务器上，订单加密这个工作放在服务器来做，服务器将包含签名的订单信息返回给app，app再通过SDK发送给支付宝，这样会更安全一些；而且服务器也能掌握所有的订单状况。</p>
+<p>如果你非要将私钥集成到app里，那可以参考SDK的demo，因为这个demo就是在app本地通过私钥做的订单签名。</p>
+<p><strong>支付结果签名验证</strong></p>
+<p>上面的回调block提到了返回的内容，返回的支付结果中的result字段里是带有订单信息和签名信息的，所以签名验证就是需要这个字段的值。<br>文档中有一个这个字段的例子，实际结果没有换行，我换一行便于阅读:</p>
+<blockquote>
+<p>partner=”2088101568358171”&amp;seller_id=”xxx@alipay.com”&amp;out_trade_no=”0819145412-6177”&amp;subject= &amp;sign_type=”RSA” &amp;sign=”hkFZr+zE9499nuqDNLZEF7W75RFFPsly876QuRSeN8WMaUgcdR00IKy5ZyBJ4eldhoJ/2zghqrD4E2G2mNjs3aE”</p>
+</blockquote>
+<p>这个签名当中分为三部分</p>
+<p>第一部分是订单信息，每个字段的具体含义可以再文档里找；<br>中间sign_type 是签名所用的算法，文档中提到，目前只是支持RSA;<br>最后的sign就是签名值。</p>
+<p>验证的步骤如下:</p>
+<p>首先把订单信息和签名值分别提取出来(SDK中并没有给进行处理)</p>
+<pre><code>订单信息就是sign_type的连字符&amp;之前的所有字符串
+
+签名值是sign后面双引导的内容，注意签名的结尾也是 = ，所以不要用split字符串的方法提取
+</code></pre><p><strong>支付SDK</strong></p>
+<p>如果只需要发送订单和处理支付返回结果，只需要添加AlipaySDK.bundle 和 Alipay.framework 就行了。</p>
+<p>发送订单的方法:</p>
+<ul>
+<li>(void)payOrder:(NSString <em>)orderStr fromScheme:(NSString </em>)schemeStr<br>callback:(CompletionBlock)completionBlock</li>
+</ul>
+<p>此时需要注意：</p>
+<p>如果手机内没有安装支付宝的app，会直接展现支付宝web支付页面，通过callback返回支付结果；</p>
+<p>如果手机内安装了支付宝的app，会跳转到支付宝的app支付，然后通过openUrl的回调返回支付结果.</p>
+<p>支付宝的SDK只给了一个处理返回结果的方法，而不会像其他的第三方SDK提供一个处理openUrl的方法，所以你需要通过demo或者在第二个文档里找到处理openUrl的方式:</p>
+<p>if ([url.host isEqualToString:@”safepay”]) {<br>[[AlipaySDK defaultService] processOrderWithPaymentResult:url standbyCallback:^(NSDictionary *resultDic) {<br>}]; }</p>
+<p>SDK也提供了一个处理openUrl返回结果的方法</p>
+<ul>
+<li>(void)processOrderWithPaymentResult:(NSURL *)resultUrl standbyCallback:(CompletionBlock)completionBlock;</li>
+</ul>
+<p>两个回调block都统一定义为typedef void(^CompletionBlock)(NSDictionary *resultDic);<br>返回了一个字典，但是SDK里完全没有提示有哪些Key.</p>
+<p>我们来看一下resultStatus 状态码分别代码什么意思，这个是在文档中没有的</p>
+<p>9000 订单支付成功</p>
+<p>8000 正在处理中</p>
+<p>4000 订单支付失败</p>
+<p>6001 用户中途取消</p>
+<p>6002 网络连接出错</p>
+<p>memo 提示信息, 比如说状态码为 6001时，memo就是“用户中途取消的意思”,但是我们在开发中绝对不能依赖于这个信息,如果未安装支付宝的app，采用网页支付时，取消时状态码是 6001，但这个memo是空的。</p>
+<p>result 订单信息,以及签名验证信息.如果你不想做签名验证，这个字段可以忽略不计了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/12/21/支付宝支付/" data-id="ciif8rttf0000v50e3jsdirh6" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-什么是-HTTPS" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/12/14/什么是-HTTPS/" class="article-date">
@@ -127,7 +220,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/什么是-HTTPS/" data-id="cii5pyuhy0001z00ew6d7k6d9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/什么是-HTTPS/" data-id="ciif8rttu0002v50etuih5l4l" class="article-share-link">Share</a>
       
       
     </footer>
@@ -186,7 +279,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/十款经典的markdown编辑器/" data-id="cii5pyuhf0000z00e6asgmj0x" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/十款经典的markdown编辑器/" data-id="ciif8rttr0001v50etapwxpx9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -230,7 +323,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/iOS9-Bitcode/" data-id="cii5pyui20002z00eg6bkeiuj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/iOS9-Bitcode/" data-id="ciif8rttw0003v50evb7m03p7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -267,7 +360,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="cii5pyui70004z00e1bjb2uoe" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="ciif8rttz0005v50ebdskz42f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -304,7 +397,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="cii5pyuia0005z00enw466pzq" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="ciif8rtu10006v50escrzlnn6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -349,7 +442,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="cii5pyui50003z00ey6238gh0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="ciif8rtty0004v50edrtro7gr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -374,7 +467,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">6</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">7</span></li></ul>
     </div>
   </div>
 
@@ -384,6 +477,10 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/12/21/支付宝支付/">支付宝支付</a>
+          </li>
         
           <li>
             <a href="/2015/12/14/什么是-HTTPS/">什么是 HTTPS</a>
@@ -399,10 +496,6 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
         
           <li>
             <a href="/2015/12/14/HTTP服务端状态码/">HTTP服务端状态码</a>
-          </li>
-        
-          <li>
-            <a href="/2015/12/11/HTTP中的cookie/">HTTP中的cookie</a>
           </li>
         
       </ul>
