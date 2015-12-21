@@ -61,6 +61,170 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-银联支付" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/12/21/银联支付/" class="article-date">
+  <time datetime="2015-12-21T00:53:31.000Z" itemprop="datePublished">2015-12-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/12/21/银联支付/">银联支付</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>下载地址：<br><a href="https://open.unionpay.com/upload/download/Development_kit85427986.rar" target="_blank" rel="external">https://open.unionpay.com/upload/download/Development_kit85427986.rar</a><br>其实我找了半个小时 也不知道怎么就下载好了 这个我在Chrome的下载记录里找到的</p>
+<p>解压之后会有这样的目录结构</p>
+<p><img src="http://ac-1qdtcf4c.clouddn.com/1e0622f04f4be6e0.png" alt=""></p>
+<p>文档在下面 sdk在upmp_iPhone里面</p>
+<p><img src="http://ac-1qdtcf4c.clouddn.com/8b5f547a680472aa.png" alt=""></p>
+<p>1、SDK 说明</p>
+<p>SDK 分为以下两个版本:<br>1.支持纯无卡交易静态库,以下简称 UPPayPlugin,包含文件:</p>
+<p>UPPayPlugin.h  UPPayPluginDelegate.h  libUPPayPlugin.a</p>
+<p>2、支持纯无卡交易和 VIPOS 音频口支付静态库,以下简称 UPPayPluginPro,</p>
+<p>包含文件:</p>
+<p>UPPayPluginPro.h<br>UPPayPluginDelegate.h  libUPPayPluginPro.a<br>3、添加 SDK 包</p>
+<p>a.根据商户选择的SDK版本,将sdk/inc目录和sdk/libs目录下对应版本的三个文件添加到 UPPayDemo 工程中;</p>
+<p>b.如 果 你 选 择 的 是 UPPayPlugin 版 本 , 添 加 QuartzCore.framework 、Security.framework 到工程中;</p>
+<p>c.如 果 你 选 择 的 是 UPPayPluginPro 版 本 , 添 加 QuartzCore.framework 、AudioToolbox.framework, CoreAudio.framework 、 MediaPlayer.framework,AVFoundation.framework 和 Security.framework 到工程中;</p>
+<p>d.在工程的 Build Settings 中找到 Other Linker Flags 中添加-ObjC 宏;（这个可能是遗留的问题 我就没写 不报错）</p>
+<p><img src="http://ac-1qdtcf4c.clouddn.com/25c11e0c7ae2466b.png" alt=""></p>
+<p>4、调用插件</p>
+<p>a.在需要调用支付控件的源文件内引用头文件 UPPayPlugin.h 或 UPPayPluginPro.h(注意:如果工程的 compile source as 选项的值不是 Objective–C++,则引用此头文件的文件类型都要改为.mm)</p>
+<p>b.通过调用</p>
+<p>(BOOL)startPay:(NSString)tn mode:(NSString)mode</p>
+<p>viewController:(UIViewController*)viewController delegate:(id)delegate;</p>
+<p>实现控件的调用</p>
+<p>c.处理支付结果</p>
+<p>银联手机支付控件有三个支付状态返回值:success、fail、cancel,分别代表:支付成功、支付失败、用户取消支付。这三个返回状态值以字符串的形式作为回调函数参数(NSString)result 返回。通过在工程中添加头文件“UPPayPluginDelegate.h”,在处理交易结果的界面,实现 UPPayPluginDelegate接口,根据该头文件中的回调函数:-(void)UPPayPluginResult:(NSString)result来实现回调方法,从而可以根据支付结果的不同进行相关的处理。</p>
+<p>a.将 xcode 工程中 Build Setting -&gt; Apple LLVM compiler Language 标签下的 C++ Language Dialect 和 C++ Standard Library 属性值修改为 Compiler Default</p>
+<p>b.将涉及到引用 UPPayPlugin.h 的源文件的后缀名都改为.mm;</p>
+<p>c.参照demo，检查工程设置 Search Paths 里的 Framework Search Paths、Header Search Paths、Library Search Paths 的路径设置,看设置路径是否正确</p>
+<p>d.添加 QuartzCore.framework、AudioToolbox.framework, CoreAudio.framework、 MediaPlayer.framework, AVFoundation.framework 和 Security.framework</p>
+<p>e.工程的 Build Settings 中找到 Other Linker Flags 中添加-ObjC 宏;</p>
+<p>上面提到的几点网上都可以找到，如果已经正确设置，还是编译不通过，那么赶紧检查下 项目targets 对应的sdk版本，选择7.0以下的，目前银联的sdk貌似还不支持7.0，</p>
+<p>注：</p>
+<p>银联支付目测只需要2个参数 1 tn 其实就是订单号 2 mode 是测试环境还是线上环境</p>
+<p>和支付宝不同的是 支付宝要求本地把订单的信息书写完毕 调起sdk支付即可 银联是我把一些生成订单的信息 如 付款方 收款方 订单描述 金额等信息传递到服务器 由服务器生成一个订单号 然后客户端调起sdk进入支付</p>
+<p>mode 竟然是个死的字符串 真是醉了 “00” 表示线上环境”01”表示测试环境</p>
+<p>返回的代理结果 更是坑爹 :success、fail、cancel,分别代表:支付成功、支付失败、用户取消支付</p>
+<p>测试环境 账号</p>
+<p>提供测试使用卡号、手机号信息(此类信息仅供测试,不会发生正式交易)招商银行预付费卡:卡号:6226 4401 2345 6785密码:111101</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/12/21/银联支付/" data-id="ciif923350000fz0eegufrr8y" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-微信支付" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/12/21/微信支付/" class="article-date">
+  <time datetime="2015-12-21T00:52:32.000Z" itemprop="datePublished">2015-12-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/12/21/微信支付/">微信支付</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>微信支付场景介绍：</p>
+<p>适用于商户在移动端APP中集成微信支付功能。</p>
+<p>商户APP调用微信提供的SDK调用微信支付模块，商户APP会跳转到微信中完成支付，支付完后跳回到商户APP内，最后展示支付结果。</p>
+<p>目前微信支付支持手机系统有：IOS（苹果）、Android（安卓）和WP（Windows Phone）。<br>交互细节如下：</p>
+<p>步骤1：用户进入商户APP，选择商品下单、确认购买，进入支付环节。商户服务后台生成支付订单，签名后将数据传输到APP端。以微信提供的DEMO为例。<br><img src="" alt=""></p>
+<p>步骤2：用户点击后发起支付操作，进入到微信界面，调起微信支付，出现确认支付界面，见图8.2。</p>
+<p><img src="http://ac-1qdtcf4c.clouddn.com/a8e0a86de05d7e0f.jpg" alt=""></p>
+<p>步骤3：用户确认收款方和金额，点击立即支付后出现输入密码界面，可选择零钱或银行卡支付见图8.3。</p>
+<p><img src="http://ac-1qdtcf4c.clouddn.com/061ea314f7baa63a.jpg" alt=""></p>
+<p>第四步：输入正确密码后，支付完成，用户端微信出现支付详情页面。</p>
+<p><img src="http://ac-1qdtcf4c.clouddn.com/7f6a9eec5845afa5.jpg" alt=""></p>
+<p>第五步：回跳到商户APP中，商户APP根据支付结果个性化展示订单处理结果。</p>
+<p><img src="http://ac-1qdtcf4c.clouddn.com/1e98e812bde76cf4.jpg" alt=""></p>
+<p>##案例介绍<br>以下是交互时序图，统一下单API、支付结果通知API和查询订单API等都涉及签名过程，调用都必须在商户服务器端完成。<br><img src="http://ac-1qdtcf4c.clouddn.com/238088fa0b3901fa.png" alt=""></p>
+<p>商户系统和微信支付系统主要交互说明：<br>步骤1：用户在商户APP中选择商品，提交订单，选择微信支付。<br>步骤2：商户后台收到用户支付单，调用微信支付统一下单接口。参见【统一下单API】。<br>步骤3：统一下单接口返回正常的prepay_id，再按签名规范重新生成签名后，将数据传输给APP。参与签名的字段名为appId，partnerId，prepayId，nonceStr，timeStamp，package。注意：package的值格式为Sign=WXPay<br>步骤4：商户APP调起微信支付。api参见本章节【app端开发步骤说明】<br>步骤5：商户后台接收支付通知。api参见【支付结果通知API】<br>步骤6：商户后台查询支付结果。，api参见【查询订单API】</p>
+<p>##APP 开发步骤</p>
+<ol>
+<li>设置appid</li>
+</ol>
+<p>商户在微信开放平台申请开发APP应用后，微信开放平台会生成APP的唯一标识APPID。在Xcode中打开项目，设置项目属性中的URL Schemes为您的APPID。<br><img src="http://ac-1qdtcf4c.clouddn.com/ff800196a5ae07e2.png" alt=""></p>
+<p>2.注册APPID</p>
+<p>商户APP工程中引入微信lib库和头文件，调用API前，需要先向微信注册您的APPID，代码如下：<br>[WXApi registerApp：@”wxd930ea5d5a258f4f” withDescription：@”demo 2.0”];</p>
+<p>3、调起支付<br>商户服务器生成支付订单，先调用【统一下单API】生成预付单，获取到prepay_id后将参数再次签名传输给APP发起支付。以下是调起微信支付的关键代码：</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PayReq *request = [[[PayReq alloc] init] autorelease]<span class="comment">;</span></span><br><span class="line">request.partnerId = @"<span class="number">10000100</span>"<span class="comment">;</span></span><br><span class="line">request.prepayId= @"<span class="number">1101000000140</span>415649af9fc314aa427"<span class="comment">;</span></span><br><span class="line">request.package = @"Sign=WXPay"<span class="comment">;</span></span><br><span class="line">request.nonceStr= @"a<span class="number">462b76e74</span>36e98e0ed<span class="number">6e13c64b4</span>fd1c"<span class="comment">;</span></span><br><span class="line">request.timeStamp= @"<span class="number">1397527777</span>"<span class="comment">;</span></span><br><span class="line">request.sign= @"<span class="number">582282D72</span>DD2B03AD<span class="number">892830965</span>F428CB<span class="number">16E7A256</span>"<span class="comment">;</span></span><br><span class="line">[WXApi sendReq：request]<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<p>4、支付结果回调<br>照微信SDK Sample，在类实现onResp函数，支付完成后，微信APP会返回到商户APP并回调onResp函数，开发者需要在该函数中接收通知，判断返回错误码，如果支付成功则去后台查询支付结果再展示用户实际支付结果。注意    一定不能以客户端返回作为用户支付的结果，应以服务器端的接收的支付通知或查询API返回的结果为准。代码示例如下：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">   -(<span class="keyword">void</span>)onResp：(BaseResp*)resp&#123;        </span><br><span class="line"><span class="keyword">if</span> ([respisKindOfClass：[PayRespclass]])&#123;</span><br><span class="line">    PayResp*response=(PayResp*)resp;</span><br><span class="line">    <span class="keyword">switch</span>(response<span class="variable">.errCode</span>)&#123;</span><br><span class="line">        caseWXSuccess：</span><br><span class="line">                 			<span class="comment">//服务器端查询支付通知或查询API返回的结果再提示成功</span></span><br><span class="line">                 			<span class="built_in">NSlog</span>(<span class="string">@"支付成功"</span>);</span><br><span class="line">                 	<span class="keyword">break</span>;</span><br><span class="line">                 	<span class="keyword">default</span>：</span><br><span class="line">                 	<span class="built_in">NSlog</span>(<span class="string">@"支付失败，retcode=%d"</span>,resp<span class="variable">.errCode</span>);</span><br><span class="line">                 	<span class="keyword">break</span>;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>回调中errCode值列表:</p>
+<table>
+<thead>
+<tr>
+<th>名  称</th>
+<th style="text-align:right">描述</th>
+<th style="text-align:center">解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td style="text-align:right">成功</td>
+<td style="text-align:center">展示成功页面</td>
+</tr>
+<tr>
+<td>-1</td>
+<td style="text-align:right">错误</td>
+<td style="text-align:center">可能的原因：签名错误，未注册appid，项目设置appid不正确，注册的appid与设置的不匹配，其他异常等</td>
+</tr>
+<tr>
+<td>-2</td>
+<td style="text-align:right">用户取消</td>
+<td style="text-align:center">无需处理。发生场景：用户中途取消支付，返回商户app</td>
+</tr>
+</tbody>
+</table>
+<p>微信支付业务流程与支付宝大致相同，但是有一点区别就是:</p>
+<p>微信支付需要先生成预支付订单.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/12/21/微信支付/" data-id="ciif9233m0002fz0e1sk44427" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-支付宝支付" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/12/21/支付宝支付/" class="article-date">
@@ -144,7 +308,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/21/支付宝支付/" data-id="ciif8rttf0000v50e3jsdirh6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/21/支付宝支付/" data-id="ciif9233j0001fz0esw174a9e" class="article-share-link">Share</a>
       
       
     </footer>
@@ -220,7 +384,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/什么是-HTTPS/" data-id="ciif8rttu0002v50etuih5l4l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/什么是-HTTPS/" data-id="ciif9233q0004fz0eqncpek9g" class="article-share-link">Share</a>
       
       
     </footer>
@@ -279,7 +443,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/十款经典的markdown编辑器/" data-id="ciif8rttr0001v50etapwxpx9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/十款经典的markdown编辑器/" data-id="ciif9233o0003fz0ekg85d53w" class="article-share-link">Share</a>
       
       
     </footer>
@@ -323,7 +487,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/iOS9-Bitcode/" data-id="ciif8rttw0003v50evb7m03p7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/iOS9-Bitcode/" data-id="ciif9233r0005fz0etrfyseos" class="article-share-link">Share</a>
       
       
     </footer>
@@ -360,7 +524,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="ciif8rttz0005v50ebdskz42f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/14/HTTP服务端状态码/" data-id="ciif9233v0007fz0egykbhcqu" class="article-share-link">Share</a>
       
       
     </footer>
@@ -397,7 +561,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="ciif8rtu10006v50escrzlnn6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/HTTP中的cookie/" data-id="ciif9233x0008fz0eqfxblksh" class="article-share-link">Share</a>
       
       
     </footer>
@@ -442,7 +606,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="ciif8rtty0004v50edrtro7gr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/12/11/hello-world/" data-id="ciif9233t0006fz0eltfa9lzx" class="article-share-link">Share</a>
       
       
     </footer>
@@ -467,7 +631,7 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">7</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -479,6 +643,14 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
       <ul>
         
           <li>
+            <a href="/2015/12/21/银联支付/">银联支付</a>
+          </li>
+        
+          <li>
+            <a href="/2015/12/21/微信支付/">微信支付</a>
+          </li>
+        
+          <li>
             <a href="/2015/12/21/支付宝支付/">支付宝支付</a>
           </li>
         
@@ -488,14 +660,6 @@ NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
         
           <li>
             <a href="/2015/12/14/十款经典的markdown编辑器/">十款经典的markdown编辑器</a>
-          </li>
-        
-          <li>
-            <a href="/2015/12/14/iOS9-Bitcode/">iOS9 Bitcode</a>
-          </li>
-        
-          <li>
-            <a href="/2015/12/14/HTTP服务端状态码/">HTTP服务端状态码</a>
           </li>
         
       </ul>
